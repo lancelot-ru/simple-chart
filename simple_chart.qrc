@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/Charts">
+        <file>icon.png</file>
+        <file>faculties.rff</file>
+    </qresource>
+</RCC>

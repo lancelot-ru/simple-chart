@@ -56,7 +56,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         auto selection = _table->selectionModel()->selectedRows();
         if (!selection.isEmpty())
         {
-            auto reply = QMessageBox::question(this, "Удалить ряд?", "Вы уверены, что хотите удалить выбранный ряд?",
+            auto reply = QMessageBox::question(this, tr("Удалить ряд?"), tr("Вы уверены, что хотите удалить выбранный ряд?"),
                                                QMessageBox::Ok | QMessageBox::Cancel);
             if (reply == QMessageBox::Ok)
             {
@@ -77,7 +77,7 @@ void MainWindow::setupViews()
 {
     auto splitter = new QSplitter(this);
     _table = new QTableView(this);
-    _table->setMaximumWidth(400);
+    _table->setMaximumWidth(300);
     _barView = new BarView(this);
     splitter->addWidget(_table);
     splitter->addWidget(_barView);
@@ -99,7 +99,8 @@ void MainWindow::setupViews()
 void MainWindow::openFile()
 {
     disconnect(_model, &QAbstractItemModel::dataChanged, _barView, &BarView::update);
-    const QString fileName = QFileDialog::getOpenFileName(this, tr("Выберите файл"), "", "*.rff");
+    const QString fileName = QFileDialog::getOpenFileName(this, tr("Выберите файл"),
+                                                          QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation), "*.rff");
     if (!fileName.isEmpty())
         loadFile(fileName);
 
@@ -161,7 +162,8 @@ void MainWindow::saveFile()
 
 void MainWindow::saveFileAs()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить файл как"), "", "*.rff");
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Сохранить файл как"),
+                                                    QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation), "*.rff");
 
     if (fileName.isEmpty())
         return;
@@ -218,17 +220,17 @@ void MainWindow::save(const QString &fileName)
 bool MainWindow::addDialog()
 {
     QDialog dialog(this, Qt::WindowCloseButtonHint);
-    dialog.setWindowTitle("Добавить ряд");
+    dialog.setWindowTitle(tr("Добавить ряд"));
     QFormLayout form(&dialog);
 
-    form.addRow(new QLabel("Добавить ряд"));
+    form.addRow(new QLabel(tr("Добавить ряд")));
 
     auto stringEdit = new QLineEdit(&dialog);
-    QString stringLabel = QString("Строка");
+    QString stringLabel = QString(tr("Строка"));
     form.addRow(stringLabel, stringEdit);
 
     auto numberEdit = new QLineEdit(&dialog);
-    QString numberLabel = QString("Значение");
+    QString numberLabel = QString(tr("Значение"));
     form.addRow(numberLabel, numberEdit);
 
     QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);

@@ -17,7 +17,7 @@ public slots:
     void update(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &);
 
 private:
-    void rebuiltChart();
+    void rebuildChart();
     int maxValue(QList<QBarSet *> list);
 
     QStandardItemModel *_model;

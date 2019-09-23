@@ -2,6 +2,10 @@
 
 #include <QtWidgets>
 
+const int FACULTIES_ROWS = 14;
+const int FACULTIES_COLUMNS = 2;
+const int STATUS_BAR_TIMEOUT = 4*1000;
+
 MainWindow::MainWindow()
     : _model(nullptr)
     , _barView(nullptr)
@@ -17,6 +21,9 @@ MainWindow::MainWindow()
     auto quitAction = fileMenu->addAction(tr("&Выйти"));
     quitAction->setShortcuts(QKeySequence::Quit);
 
+    auto editMenu = new QMenu(tr("&Редактировать"), this);
+    auto addAction = editMenu->addAction(tr("&Добавить ряд"));
+
     auto helpMenu = new QMenu(tr("&Помощь"), this);
     auto aboutAction = helpMenu->addAction(tr("&О программе"), this, &MainWindow::about);
     aboutAction->setShortcuts(QKeySequence::HelpContents);
@@ -28,9 +35,11 @@ MainWindow::MainWindow()
     connect(openAction, &QAction::triggered, this, &MainWindow::openFile);
     connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);
     connect(saveAsAction, &QAction::triggered, this, &MainWindow::saveFileAs);
+    connect(addAction, &QAction::triggered, this, &MainWindow::addRow);
     connect(quitAction, &QAction::triggered, qApp, &QCoreApplication::quit);
 
     menuBar()->addMenu(fileMenu);
+    menuBar()->addMenu(editMenu);
     menuBar()->addMenu(helpMenu);
     statusBar();
 
@@ -47,7 +56,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
         auto selection = _table->selectionModel()->selectedRows();
         if (!selection.isEmpty())
         {
-            auto reply = QMessageBox::question(this, "Удалить ряд?", "Вы уверены, что хотите удалить выбранный ряд?", QMessageBox::Ok | QMessageBox::Cancel);
+            auto reply = QMessageBox::question(this, "Удалить ряд?", "Вы уверены, что хотите удалить выбранный ряд?",
+                                               QMessageBox::Ok | QMessageBox::Cancel);
             if (reply == QMessageBox::Ok)
             {
                 _model->removeRow(selection.at(0).row());
@@ -60,14 +70,14 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 
 void MainWindow::setupModel()
 {
-    _model = new QStandardItemModel(14, 2, this);
+    _model = new QStandardItemModel(FACULTIES_ROWS, FACULTIES_COLUMNS, this);
 }
 
 void MainWindow::setupViews()
 {
     auto splitter = new QSplitter(this);
     _table = new QTableView(this);
-    _table->setMaximumWidth(300);
+    _table->setMaximumWidth(400);
     _barView = new BarView(this);
     splitter->addWidget(_table);
     splitter->addWidget(_barView);
@@ -134,14 +144,14 @@ void MainWindow::loadFile(const QString &fileName)
 
     file.close();
     _currentFileName = fileName;
-    statusBar()->showMessage(tr("Загружен %1").arg(fileName), 4000);
+    statusBar()->showMessage(tr("Загружен %1").arg(fileName), STATUS_BAR_TIMEOUT);
 }
 
 void MainWindow::saveFile()
 {
     if (QString::compare(_currentFileName, ":/Charts/faculties.rff") == 0)
     {
-        statusBar()->showMessage(tr("Демонстрационный файл не может быть сохранен!"), 4000);
+        statusBar()->showMessage(tr("Демонстрационный файл не может быть сохранен!"), STATUS_BAR_TIMEOUT);
     }
     else
     {
@@ -159,9 +169,19 @@ void MainWindow::saveFileAs()
     save(fileName);
 }
 
+void MainWindow::addRow()
+{
+    bool ok = addDialog();
+
+    if (ok)
+    {
+        statusBar()->showMessage(tr("Добавлен ряд"), STATUS_BAR_TIMEOUT);
+    }
+}
+
 void MainWindow::about()
 {
-   QMessageBox::about(this, tr("О программе"), tr("ТГУ, РФФ, май 2018"));
+    QMessageBox::about(this, tr("О программе"), tr("ТГУ, РФФ, май 2018"));
 }
 
 void MainWindow::save(const QString &fileName)
@@ -192,5 +212,40 @@ void MainWindow::save(const QString &fileName)
     }
 
     file.close();
-    statusBar()->showMessage(tr("Сохранен %1").arg(fileName), 4000);
+    statusBar()->showMessage(tr("Сохранен %1").arg(fileName), STATUS_BAR_TIMEOUT);
+}
+
+bool MainWindow::addDialog()
+{
+    QDialog dialog(this, Qt::WindowCloseButtonHint);
+    dialog.setWindowTitle("Добавить ряд");
+    QFormLayout form(&dialog);
+
+    form.addRow(new QLabel("Добавить ряд"));
+
+    auto stringEdit = new QLineEdit(&dialog);
+    QString stringLabel = QString("Строка");
+    form.addRow(stringLabel, stringEdit);
+
+    auto numberEdit = new QLineEdit(&dialog);
+    QString numberLabel = QString("Значение");
+    form.addRow(numberLabel, numberEdit);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+    form.addRow(&buttonBox);
+    QObject::connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    QObject::connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        QStandardItem *stringItem = new QStandardItem(stringEdit->text());
+        QStandardItem *numberItem = new QStandardItem(numberEdit->text());
+
+        _model->appendRow(QList<QStandardItem *>() << stringItem << numberItem);
+        _barView->refresh();
+
+        return true;
+    }
+
+    return false;
 }

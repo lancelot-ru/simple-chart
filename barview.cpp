@@ -29,14 +29,14 @@ void BarView::setModel(QStandardItemModel *model)
 
     _series = new QBarSeries(_chart);
 
-    rebuiltChart();
+    rebuildChart();
 }
 
 void BarView::refresh()
 {
     _series->clear();
     _chart->removeSeries(_series);
-    rebuiltChart();
+    rebuildChart();
 }
 
 void BarView::update(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &)
@@ -65,7 +65,7 @@ void BarView::update(const QModelIndex &topLeft, const QModelIndex &bottomRight,
     _chart->axes(Qt::Vertical).first()->setRange(0, max);
 }
 
-void BarView::rebuiltChart()
+void BarView::rebuildChart()
 {
     int max = 0;
     for (int row = 0; row < _model->rowCount(QModelIndex()); ++row)

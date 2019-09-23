@@ -20,6 +20,7 @@ private slots:
     void openFile();
     void saveFile();
     void saveFileAs();
+    void addRow();
     void about();
 
 private:
@@ -27,6 +28,7 @@ private:
     void setupViews();
     void loadFile(const QString &path);
     void save(const QString &fileName);
+    bool addDialog();
 
     QStandardItemModel *_model;
     BarView *_barView;

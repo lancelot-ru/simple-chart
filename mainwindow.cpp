@@ -5,6 +5,7 @@
 MainWindow::MainWindow()
     : _model(nullptr)
     , _barView(nullptr)
+    , _table(nullptr)
 {
     auto fileMenu = new QMenu(tr("&Файл"), this);
     auto openAction = fileMenu->addAction(tr("&Открыть..."));
@@ -37,6 +38,26 @@ MainWindow::MainWindow()
     resize(870, 550);
 }
 
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    switch (event->key())
+    {
+    case Qt::Key_Delete:
+    {
+        auto selection = _table->selectionModel()->selectedRows();
+        if (!selection.isEmpty())
+        {
+            auto reply = QMessageBox::question(this, "Удалить ряд?", "Вы уверены, что хотите удалить выбранный ряд?", QMessageBox::Ok | QMessageBox::Cancel);
+            if (reply == QMessageBox::Ok)
+            {
+                _model->removeRow(selection.at(0).row());
+                _barView->refresh();
+            }
+        }
+    }
+    }
+}
+
 void MainWindow::setupModel()
 {
     _model = new QStandardItemModel(14, 2, this);
@@ -45,21 +66,21 @@ void MainWindow::setupModel()
 void MainWindow::setupViews()
 {
     auto splitter = new QSplitter(this);
-    auto table = new QTableView(this);
-    table->setMaximumWidth(300);
+    _table = new QTableView(this);
+    _table->setMaximumWidth(300);
     _barView = new BarView(this);
-    splitter->addWidget(table);
+    splitter->addWidget(_table);
     splitter->addWidget(_barView);
     splitter->setSizes(QList<int>({INT_MAX, INT_MAX}));
 
-    table->setModel(_model);
+    _table->setModel(_model);
     _barView->setModel(_model);
     connect(_model, &QAbstractItemModel::dataChanged, _barView, &BarView::update);
 
     auto selectionModel = new QItemSelectionModel(_model);
-    table->setSelectionModel(selectionModel);
+    _table->setSelectionModel(selectionModel);
 
-    auto headerView = table->horizontalHeader();
+    auto headerView = _table->horizontalHeader();
     headerView->setStretchLastSection(true);
 
     setCentralWidget(splitter);
@@ -72,7 +93,7 @@ void MainWindow::openFile()
     if (!fileName.isEmpty())
         loadFile(fileName);
 
-    _barView->onNewFileOpened();
+    _barView->refresh();
     connect(_model, &QAbstractItemModel::dataChanged, _barView, &BarView::update);
 }
 

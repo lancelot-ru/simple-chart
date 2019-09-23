@@ -21,7 +21,7 @@ BarView::~BarView()
     delete _view;
 }
 
-void BarView::setModel(QAbstractItemModel *model)
+void BarView::setModel(QStandardItemModel *model)
 {
     _model = model;
 
@@ -29,6 +29,13 @@ void BarView::setModel(QAbstractItemModel *model)
 
     _series = new QBarSeries(_chart);
 
+    rebuiltChart();
+}
+
+void BarView::refresh()
+{
+    _series->clear();
+    _chart->removeSeries(_series);
     rebuiltChart();
 }
 
@@ -56,13 +63,6 @@ void BarView::update(const QModelIndex &topLeft, const QModelIndex &bottomRight,
     int max = maxValue(list);
 
     _chart->axes(Qt::Vertical).first()->setRange(0, max);
-}
-
-void BarView::onNewFileOpened()
-{
-    _series->clear();
-    _chart->removeSeries(_series);
-    rebuiltChart();
 }
 
 void BarView::rebuiltChart()

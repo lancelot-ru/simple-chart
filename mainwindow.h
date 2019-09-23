@@ -13,6 +13,9 @@ class MainWindow : public QMainWindow
 public:
     MainWindow();
 
+protected:
+    void keyPressEvent(QKeyEvent *event);
+
 private slots:
     void openFile();
     void saveFile();
@@ -25,8 +28,9 @@ private:
     void loadFile(const QString &path);
     void save(const QString &fileName);
 
-    QAbstractItemModel *_model;
+    QStandardItemModel *_model;
     BarView *_barView;
+    QTableView *_table;
 
     QString _currentFileName;
 };

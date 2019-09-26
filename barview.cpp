@@ -18,7 +18,6 @@ BarView::~BarView()
 {
     delete _series;
     delete _chart;
-    delete _view;
 }
 
 void BarView::setModel(QStandardItemModel *model)
